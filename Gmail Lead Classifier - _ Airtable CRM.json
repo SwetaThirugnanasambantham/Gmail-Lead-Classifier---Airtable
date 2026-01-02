@@ -1,0 +1,514 @@
+{
+  "name": "Gmail Lead Classifier - > Airtable CRM",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f3de165e-bb1e-4f41-8f61-b765e6c27660",
+              "name": "Subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "a4d5e690-568a-4470-9576-e20da6929b1c",
+              "name": "Sender",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "eeb8add8-d66a-4c55-9f71-266b6e0689e0",
+              "name": "Body",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            },
+            {
+              "id": "d61e19cd-fbbe-4c45-ae32-5b23873d4502",
+              "name": "receivedDate",
+              "value": "={{ $json.internalDate }}",
+              "type": "number"
+            },
+            {
+              "id": "311b4912-c3d2-49fb-ab31-edda926a16c8",
+              "name": "From",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "ae30b076-48bf-4b36-a4be-0b30aa865a31",
+              "name": "Subject",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0a71363b-831f-45b8-af80-a95a97276245",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a senior sales development assistant.\n\nYour goal is to NEVER miss a potential business lead.\n\nClassify an email as \"lead\" if there is ANY possibility that:\n- the sender wants services, development, consulting, collaboration, or help\n- the sender is asking to discuss something, explore an idea, or check availability\n- the email could realistically turn into paid work later\n\nEven vague or exploratory emails MUST be classified as \"lead\".\n\nClassify as \"unlead\" ONLY if the email is clearly:\n- a system alert, notification, or OTP\n- a newsletter or automated email\n- purely personal or social with no business intent\n\nReturn ONLY valid JSON in this format:\n{\n  \"leadType\": \"lead\" | \"unlead\"\n}\n"
+            },
+            {
+              "content": "=Email Subject:\n{{$json.subject}}\n\nEmail Body:\n{{$json.body}}\n\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        1296,
+        16
+      ],
+      "id": "5fdf067f-a692-4cb1-a2ac-5468b6d0f9b0",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "a62v2nyfbNFKjyIy",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "180d1d23-ed58-4fb0-ab4a-05ff79874957",
+              "leftValue": "={{ $json.output[0].content[0].text }}",
+              "rightValue": "lead",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1824,
+        16
+      ],
+      "id": "98a8b338-d516-4805-895e-c6358afe353c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appBPlLDEv2F87Ak9",
+          "mode": "list",
+          "cachedResultName": "Leads CRM",
+          "cachedResultUrl": "https://airtable.com/appBPlLDEv2F87Ak9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblH0RHkXgmrL1WJX",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appBPlLDEv2F87Ak9/tblH0RHkXgmrL1WJX"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Subject": "={{ $json.Subject }}",
+            "Sender Name": "={{ $json.Sender }}",
+            "Email Body": "={{ $json.Body }}",
+            "Received Date": "={{ $json.receivedDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email Subject",
+              "displayName": "Email Subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Sender Name",
+              "displayName": "Sender Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Body",
+              "displayName": "Email Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Lead Type",
+              "displayName": "Lead Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Lead",
+                  "value": "Lead"
+                },
+                {
+                  "name": "Unlead",
+                  "value": "Unlead"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Received Date",
+              "displayName": "Received Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2448,
+        -64
+      ],
+      "id": "90bf3126-7baa-48a4-8b7f-68b6ac0867ef",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "N6KLpNYpVG9E7LMT",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ae87f410-79b1-49c6-9052-545c1491415c",
+              "name": "output[0].content[0].text",
+              "value": "={{ JSON.parse($json.output[0].content[0].text).leadType.toLowerCase() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        16
+      ],
+      "id": "1048740b-f08f-4592-b30d-4be065f15028",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d1e2f0fe-c5a0-45ca-b37a-8a9f78b569aa",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        144
+      ],
+      "id": "a2a18c08-9f9f-4f5d-b096-7e4bd801bc29",
+      "name": "Get many threads",
+      "webhookId": "de7e9699-4d89-47cb-b407-84a75c7b4103",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4qAEp4lvDchX7lcw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "799b1e93-c2c5-493e-8fb7-7e1aae74aa5d",
+      "name": "Wait",
+      "webhookId": "225f3587-04cd-4b16-989c-43d1bd1da069"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "d9209f00-fd1e-44c6-861b-88129a59bbde",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "113f9bd3-9fe7-41e0-8371-ff58950957df",
+              "name": "Subject",
+              "value": "={{ $('Wait').item.json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "91c09c13-51fa-4028-8b7a-9b0ea6e0f786",
+              "name": "Sender",
+              "value": "={{ $('Wait').item.json.Sender }}",
+              "type": "string"
+            },
+            {
+              "id": "634bdac3-343d-4368-8b3b-38959ad8a199",
+              "name": "Body",
+              "value": "={{ $('Loop Over Items').item.json.Body }}",
+              "type": "string"
+            },
+            {
+              "id": "6c1ec56a-710d-49e4-a9c4-2f7f49d617c8",
+              "name": "receivedDate",
+              "value": "={{ $('Loop Over Items').item.json.receivedDate }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2032,
+        112
+      ],
+      "id": "db7dc766-e2d9-40b8-b623-b7e4cfdd80c6",
+      "name": "Edit Fields2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many threads": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ac5452ff-9d54-488a-82d4-34d243e1a2e3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "afd93c4de325908d2b5220fe4196f15fe1a5b6dccc006c57fd746072bf86e349"
+  },
+  "id": "Im5HXSJ9XFSBCvPs",
+  "tags": []
+}

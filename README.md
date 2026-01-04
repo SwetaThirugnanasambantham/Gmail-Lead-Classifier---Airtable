@@ -15,10 +15,9 @@ This repository contains an n8n workflow that automatically processes incoming e
 - IF / Switch nodes for lead classification logic
 - Airtable (used as the CRM)
 
-## Workflow File
-- `lead-classification-airtable.json`
+## Workflow 
+<img width="1687" height="330" alt="image" src="https://github.com/user-attachments/assets/e5145398-9c8a-47bd-940e-50e632b1a834" />
 
-This JSON file contains the complete workflow logic, including nodes, connections, and expressions.
 
 
 Field names can be adjusted in the Airtable node mapping inside n8n.
